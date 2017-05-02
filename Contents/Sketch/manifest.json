@@ -9,16 +9,9 @@
       {
         "script" : "script.cocoascript",
         "handler" : "onRun",
-        "shortcut" : "command shift y",
-        "name" : "Get Page Names",
-        "identifier" : "my.plugin.pagenames"
-      },
-      {
-        "script" : "script.cocoascript",
-        "handler" : "loadGifMock",
-        "shortcut" : "",
-        "name" : "Load Gif Mock",
-        "identifier" : "loadGifMock"
+        "shortcut" : "cmd shift ctrl g",
+        "name" : "Send to Gif Mock",
+        "identifier" : "com.bohemiancoding.sketch.onRun"
       }
     ]
 }

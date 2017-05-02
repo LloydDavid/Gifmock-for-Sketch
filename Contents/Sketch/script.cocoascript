@@ -3,35 +3,72 @@ var dlog = function(message) {
   log('Gif Mock: ' + message)
 }
 
-// Create alert message
-function alert(message) {
-  var app = [NSApplication sharedApplication];
-  [app displayDialog:message];
-
-  dlog(message);
-}
-
-var onRun = function(context) {
-  //reference the Sketch Document
-  var doc = context.document;
+var sendToGifMock = function(context) {
   
-  //reference all the pages in the document in an array
-  var pages = [doc pages];
+  // get temp folder path
+  var pluginDomain = "com.sketchplugin.gifmock";
+  var folderName = "exportedArtboards";
+  var fileManager = NSFileManager.defaultManager();
+  var tempFolderURL = fileManager.URLsForDirectory_inDomains(NSCachesDirectory, NSUserDomainMask).lastObject().URLByAppendingPathComponent(pluginDomain).URLByAppendingPathComponent(folderName);
+  fileManager.createDirectoryAtPath_withIntermediateDirectories_attributes_error(tempFolderURL.path(), true, nil, nil);
   
-  //loop through the pages of the document
-  for (var i = 0; i < pages.count(); i++){
-    //reference each page
-    var page = pages[i];
+  // export selected artboards to temp folder
+  var artboards = context.selection.valueForKeyPath("@distinctUnionOfObjects.parentArtboard"),
+      loop = artboards.objectEnumerator(), 
+    userInfo = {},
+    exportScale = 1,
+    exportFormat = "png",
+    jsonFilePath = tempFolderURL.URLByAppendingPathComponent("info").URLByAppendingPathExtension("json").path(),
+      artboard, exportURL, exportRequest;
+  
+  userInfo.files = [];
+  
+  while(artboard = loop.nextObject()) {
     
-    //get the name of the page
-    var pageName = [page name];
+    // create an export request for each artboard so we can control the background color
+    exportRequest = MSExportRequest.alloc().init();
+    exportRequest.setRect(artboard.absoluteRect().rect());
+    exportRequest.setScale(exportScale);
+    exportRequest.setShouldTrim(0);
+    exportRequest.setSaveForWeb(1);
+    exportRequest.setBackgroundColor(( artboard.hasBackgroundColor() ? artboard.backgroundColor() : MSImmutableColor.colorWithSVGString("#FFFFFF").newMutableCounterpart() ));
+    exportRequest.setIncludeArtboardBackground(1);
+    exportRequest.setName(artboard.objectID());
+    exportRequest.setFormat(exportFormat);
+    exportURL = tempFolderURL.URLByAppendingPathComponent(artboard.objectID()).URLByAppendingPathExtension(exportFormat);
+    context.document.saveArtboardOrSlice_toFile(exportRequest, exportURL.path());
     
-    //show the page name in the console
-    dlog(pageName);
+    userInfo.files.push({ image: exportURL.path(), name: artboard.name() });
   }
+
+  // save the userInfo to a json file in the temp folder (open this json file in your application)
+  NSString.alloc().initWithData_encoding(NSJSONSerialization.dataWithJSONObject_options_error(userInfo, NSJSONWritingPrettyPrinted, nil), NSUTF8StringEncoding).writeToFile_atomically_encoding_error(jsonFilePath, true, NSUTF8StringEncoding, nil);
+  
+  // open the temp folder for debugging
+  NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent())
 }
 
 var loadGifMock = function(context) {
   var path = context.scriptPath;
   [[NSWorkspace sharedWorkspace] launchApplication:@'Gif Mock'];
+}
+
+var _alert = function(message, informativeText) {
+  var alert = [[NSAlert alloc] init];
+  [alert setMessageText:message];
+  [alert addButtonWithTitle:"Dismiss"];
+  if (informativeText != undefined) {
+    [alert setInformativeText:informativeText]
+  }
+  [alert runModal]
+}
+
+var onRun = function(context) {
+  try {
+    sendToGifMock(context);
+  }
+  catch (e) {
+    dlog(e);
+    _alert("Something went wrong with the Gif Mock plugin.", e.message);
+  }
 }
