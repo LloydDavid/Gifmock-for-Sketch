@@ -3,8 +3,7 @@ var dlog = function(message) {
   log('Gif Mock: ' + message)
 }
 
-var sendToGifMock = function(context) {
-  
+var sendToGifMock = function(context) { 
   // get temp folder path
   var pluginDomain = "com.sketchplugin.gifmock";
   var folderName = "exportedArtboards";
@@ -14,17 +13,21 @@ var sendToGifMock = function(context) {
   
   // export selected artboards to temp folder
   var artboards = context.selection.valueForKeyPath("@distinctUnionOfObjects.parentArtboard"),
-      loop = artboards.objectEnumerator(), 
-    userInfo = {},
+    loop = artboards.objectEnumerator(), 
     exportScale = 1,
     exportFormat = "png",
-    jsonFilePath = tempFolderURL.URLByAppendingPathComponent("info").URLByAppendingPathExtension("json").path(),
-      artboard, exportURL, exportRequest;
+    jsonFilePath = tempFolderURL.URLByAppendingPathComponent("info").URLByAppendingPathExtension("gifmock").path(),
+    artboard, exportURL, exportRequest;
   
-  userInfo.files = [];
+  var state = {
+    "frames": [],
+    "selectedFrame": 0,
+    "defaultDelay": 1000
+  }
+
+  state.frames = [];
   
   while(artboard = loop.nextObject()) {
-    
     // create an export request for each artboard so we can control the background color
     exportRequest = MSExportRequest.alloc().init();
     exportRequest.setRect(artboard.absoluteRect().rect());
@@ -38,19 +41,17 @@ var sendToGifMock = function(context) {
     exportURL = tempFolderURL.URLByAppendingPathComponent(artboard.objectID()).URLByAppendingPathExtension(exportFormat);
     context.document.saveArtboardOrSlice_toFile(exportRequest, exportURL.path());
     
-    userInfo.files.push({ image: exportURL.path(), name: artboard.name() });
+    state.frames.push({ image: exportURL.path(), name: artboard.name(), width: artboard.absoluteRect().width(), height: artboard.absoluteRect().height() });
   }
 
-  // save the userInfo to a json file in the temp folder (open this json file in your application)
-  NSString.alloc().initWithData_encoding(NSJSONSerialization.dataWithJSONObject_options_error(userInfo, NSJSONWritingPrettyPrinted, nil), NSUTF8StringEncoding).writeToFile_atomically_encoding_error(jsonFilePath, true, NSUTF8StringEncoding, nil);
+  // save the state to a json file in the temp folder (open this json file in your application)
+  NSString.alloc().initWithData_encoding(NSJSONSerialization.dataWithJSONObject_options_error(state, NSJSONWritingPrettyPrinted, nil), NSUTF8StringEncoding).writeToFile_atomically_encoding_error(jsonFilePath, true, NSUTF8StringEncoding, nil);
   
   // open the temp folder for debugging
-  NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent())
-}
-
-var loadGifMock = function(context) {
-  var path = context.scriptPath;
-  [[NSWorkspace sharedWorkspace] launchApplication:@'Gif Mock'];
+  // NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent());
+  
+  // Opening Json file in Gif Mock
+  NSWorkspace.sharedWorkspace().openFile_withApplication(jsonFilePath, 'Gif Mock');
 }
 
 var _alert = function(message, informativeText) {
