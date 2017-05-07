@@ -44,14 +44,21 @@ var sendToGifMock = function(context) {
     state.frames.push({ image: exportURL.path(), name: artboard.name(), width: artboard.absoluteRect().width(), height: artboard.absoluteRect().height() });
   }
 
-  // save the state to a json file in the temp folder (open this json file in your application)
-  NSString.alloc().initWithData_encoding(NSJSONSerialization.dataWithJSONObject_options_error(state, NSJSONWritingPrettyPrinted, nil), NSUTF8StringEncoding).writeToFile_atomically_encoding_error(jsonFilePath, true, NSUTF8StringEncoding, nil);
-  
-  // open the temp folder for debugging
-  // NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent());
-  
-  // Opening Json file in Gif Mock
-  NSWorkspace.sharedWorkspace().openFile_withApplication(jsonFilePath, 'Gif Mock');
+  if (state.frames.length > 0) {
+    // save the state to a json file in the temp folder (open this json file in your application)
+    NSString.alloc().initWithData_encoding(NSJSONSerialization.dataWithJSONObject_options_error(state, NSJSONWritingPrettyPrinted, nil), NSUTF8StringEncoding).writeToFile_atomically_encoding_error(jsonFilePath, true, NSUTF8StringEncoding, nil);
+    
+    // open the temp folder for debugging
+    // NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent());
+    
+    // Opening Json file in Gif Mock
+    NSWorkspace.sharedWorkspace().openFile_withApplication(jsonFilePath, 'Gif Mock');
+  }
+  else {
+    var message = "You must select the artboards you want to send to Gif Mock first."
+    dlog(message);
+    _alert("No artboards selected", message);
+  }
 }
 
 var _alert = function(message, informativeText) {
