@@ -9,7 +9,7 @@
       {
         "script" : "script.cocoascript",
         "handler" : "onRun",
-        "shortcut" : "cmd shift ctrl g",
+        "shortcut":"alt cmd g",
         "name" : "Send to Gif Mock",
         "identifier" : "com.bohemiancoding.sketch.onRun"
       }
