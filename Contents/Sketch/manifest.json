@@ -2,7 +2,7 @@
     "name" : "Gif Mock",
     "identifier" : "com.gifmock.sketchplugin",
     "version" : "1.0",
-    "description" : "Gif Mock Sketch Plugin",
+    "description" : "Go to the artboard linked to this layer.",
     "authorEmail" : "hello@stevenfabre.com",
     "author" : "Steven Fabre",
     "commands" : [
@@ -11,7 +11,9 @@
         "handler" : "onRun",
         "shortcut":"alt cmd g",
         "name" : "Send to Gif Mock",
-        "identifier" : "com.bohemiancoding.sketch.onRun"
+        "identifier" : "com.bohemiancoding.sketch.onRun",
+        "description" : "Send selected artboards to Gif Mock",
+        "icon" : "gifmock.png",
       }
     ]
 }
