@@ -44,7 +44,7 @@ var sendToGifMock = function(context) {
       append = '@'+ exportScale + 'x';
     }
 
-    var name = artboard.name() + artboard.objectID() + append;
+    var name = artboard.name() + append;
     var width = artboard.absoluteRect().width() * exportScale;
     var height = artboard.absoluteRect().height() * exportScale;
 
