@@ -3,31 +3,51 @@ var dlog = function(message) {
   log('Gif Mock: ' + message)
 }
 
-var sendToGifMock = function(context) { 
+var sendToGifMock = function(context) {
   // get temp folder path
   var pluginDomain = "com.sketchplugin.gifmock";
   var folderName = "exportedArtboards";
   var fileManager = NSFileManager.defaultManager();
   var tempFolderURL = fileManager.URLsForDirectory_inDomains(NSCachesDirectory, NSUserDomainMask).lastObject().URLByAppendingPathComponent(pluginDomain).URLByAppendingPathComponent(folderName);
   fileManager.createDirectoryAtPath_withIntermediateDirectories_attributes_error(tempFolderURL.path(), true, nil, nil);
-  
+
   // export selected artboards to temp folder
   var artboards = context.selection.valueForKeyPath("@distinctUnionOfObjects.parentArtboard"),
-    loop = artboards.objectEnumerator(), 
+    loop = artboards.objectEnumerator(),
     exportScale = 1,
     exportFormat = "png",
     jsonFilePath = tempFolderURL.URLByAppendingPathComponent("info").URLByAppendingPathExtension("gifmock").path(),
     artboard, exportURL, exportRequest;
-  
+
   var state = {
     "frames": [],
-    "selectedFrame": 0,
-    "defaultDelay": 1000
   }
 
   state.frames = [];
-  
+
   while(artboard = loop.nextObject()) {
+    dlog("Artboard: " + artboard)
+    dlog("Export formats: " + artboard.exportOptions().exportFormats())
+    dlog("First format: " + artboard.exportOptions().exportFormats().firstObject())
+
+    if (artboard.exportOptions().exportFormats().firstObject()) {
+      dlog('yo');
+      exportScale = artboard.exportOptions().exportFormats().firstObject().scale();
+    }
+    else {
+      exportScale = 1
+    }
+
+    var append = '';
+
+    if (exportScale != 1) {
+      append = '@'+ exportScale + 'x';
+    }
+
+    var name = artboard.name() + artboard.objectID() + append;
+    var width = artboard.absoluteRect().width() * exportScale;
+    var height = artboard.absoluteRect().height() * exportScale;
+
     // create an export request for each artboard so we can control the background color
     exportRequest = MSExportRequest.alloc().init();
     exportRequest.setRect(artboard.absoluteRect().rect());
@@ -36,21 +56,21 @@ var sendToGifMock = function(context) {
     exportRequest.setSaveForWeb(1);
     exportRequest.setBackgroundColor(( artboard.hasBackgroundColor() ? artboard.backgroundColor() : MSImmutableColor.colorWithSVGString("#FFFFFF").newMutableCounterpart() ));
     exportRequest.setIncludeArtboardBackground(1);
-    exportRequest.setName(artboard.objectID());
+    exportRequest.setName(name);
     exportRequest.setFormat(exportFormat);
     exportURL = tempFolderURL.URLByAppendingPathComponent(artboard.objectID()).URLByAppendingPathExtension(exportFormat);
     context.document.saveArtboardOrSlice_toFile(exportRequest, exportURL.path());
-    
-    state.frames.push({ image: exportURL.path(), name: artboard.name(), width: artboard.absoluteRect().width(), height: artboard.absoluteRect().height() });
+
+    state.frames.push({ image: exportURL.path(), name: name, width: width, height: height });
   }
 
   if (state.frames.length > 0) {
     // save the state to a json file in the temp folder (open this json file in your application)
     NSString.alloc().initWithData_encoding(NSJSONSerialization.dataWithJSONObject_options_error(state, NSJSONWritingPrettyPrinted, nil), NSUTF8StringEncoding).writeToFile_atomically_encoding_error(jsonFilePath, true, NSUTF8StringEncoding, nil);
-    
+
     // open the temp folder for debugging
-    // NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent());
-    
+    NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent());
+
     // Opening Json file in Gif Mock
     NSWorkspace.sharedWorkspace().openFile_withApplication(jsonFilePath, 'Gif Mock');
   }
