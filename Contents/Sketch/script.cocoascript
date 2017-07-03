@@ -20,6 +20,7 @@ var sendToGifMock = function(context) {
     artboard, exportURL, exportRequest;
 
   var state = {
+    "isSketch": true,
     "frames": [],
   }
 
@@ -31,7 +32,6 @@ var sendToGifMock = function(context) {
     dlog("First format: " + artboard.exportOptions().exportFormats().firstObject())
 
     if (artboard.exportOptions().exportFormats().firstObject()) {
-      dlog('yo');
       exportScale = artboard.exportOptions().exportFormats().firstObject().scale();
     }
     else {
@@ -69,7 +69,7 @@ var sendToGifMock = function(context) {
     NSString.alloc().initWithData_encoding(NSJSONSerialization.dataWithJSONObject_options_error(state, NSJSONWritingPrettyPrinted, nil), NSUTF8StringEncoding).writeToFile_atomically_encoding_error(jsonFilePath, true, NSUTF8StringEncoding, nil);
 
     // open the temp folder for debugging
-    // NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent());
+    NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(jsonFilePath, jsonFilePath.stringByDeletingLastPathComponent());
 
     // Opening Json file in Gif Mock
     NSWorkspace.sharedWorkspace().openFile_withApplication(jsonFilePath, 'Gif Mock');
