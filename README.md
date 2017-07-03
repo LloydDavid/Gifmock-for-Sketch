@@ -1,4 +1,4 @@
-# Gif Mock for Sketch
+# Gifmock for Sketch
 
 Gif Mock is a simple desktop application that helps you create high quality GIFs from your mockups. With Gif Mock for Sketch, you can design your states in Sketch, and hit ⌥⌘G to turn artboards into GIF Frames.
 
