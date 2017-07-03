@@ -14,4 +14,4 @@ Download the plugin and double click to install.
 
 ## Usage
 
-Turning artboards into GIF Frames is very easy. Select your artboards and `⌥⌘G`. That will automatically open Gif Mock
+Turning artboards into GIF Frames is very easy. Select your artboards and `⌥⌘G`. That will automatically open Gif Mock with your selected artboards as frames. From there, you can easily tweak the timing of each frame, or even crop the GIF to highlight the part you need. Once you're done, simply hit `Export GIF` to save the GIF.
